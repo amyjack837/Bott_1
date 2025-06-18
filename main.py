@@ -90,7 +90,8 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
             media_urls = download_facebook(link)
 
         if not media_urls:
-            await update.message.reply_text(f"❌ Could not fetch media from {platform.title()}.
+            await update.message.reply_text(f"❌ Could not fetch media from {platform.title()}.")
+
 Try manually: {link}")
         else:
             for media in media_urls:
