@@ -90,15 +90,19 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
             media_urls = download_facebook(link)
 
         if not media_urls:
-            await update.message.reply_text(f"❌ Could not fetch media from {platform.title()}.")
-
-Try manually: {link}")
+            await update.message.reply_text(
+                f"❌ Could not fetch media from {platform.title()}.\nTry manually: {link}"
+            )
         else:
             for media in media_urls:
-                if media.endswith(".mp4") or "googlevideo.com" in media:
-                    await update.message.reply_video(media)
-                else:
-                    await update.message.reply_photo(media)
+                try:
+                    if media.endswith(".mp4") or "googlevideo.com" in media:
+                        await update.message.reply_video(media)
+                    else:
+                        await update.message.reply_photo(media)
+                except Exception as e:
+                    logging.warning(f"[SEND FAIL] {e}")
+                    await update.message.reply_text(f"⚠️ Failed to send media. Try manually:\n{media}")
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
