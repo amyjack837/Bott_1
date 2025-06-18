@@ -5,18 +5,22 @@ import requests
 import instaloader
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-from dotenv import load_dotenv
 import yt_dlp as youtube_dl
 from facebook_scraper import get_posts
 
-load_dotenv()
+# Logging setup
 logging.basicConfig(level=logging.INFO)
-BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-IG_USERNAME = os.getenv("IG_USERNAME")
-IG_PASSWORD = os.getenv("IG_PASSWORD")
-FB_USERNAME = os.getenv("FB_USERNAME")
-FB_PASSWORD = os.getenv("FB_PASSWORD")
+# Telegram bot token
+BOT_TOKEN = "your_bot_token_here"  # Replace with your actual bot token
+
+# Instagram credentials
+IG_USERNAME = "amyjack251"
+IG_PASSWORD = "Amyjack@122"
+
+# Facebook credentials (not currently used in script but saved for future use if needed)
+FB_USERNAME = "Amyjackten"
+FB_PASSWORD = "Amyjack@122"
 
 def extract_links(text):
     return re.findall(r"https?://\S+", text)
