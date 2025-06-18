@@ -5,22 +5,16 @@ import requests
 import instaloader
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from dotenv import load_dotenv
 import yt_dlp as youtube_dl
-from facebook_scraper import get_posts
 
-# Logging setup
+# Load credentials from .env
+load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-# Telegram bot token
-BOT_TOKEN = "your_bot_token_here"  # Replace with your actual bot token
-
-# Instagram credentials
-IG_USERNAME = "amyjack251"
-IG_PASSWORD = "Amyjack@122"
-
-# Facebook credentials (not currently used in script but saved for future use if needed)
-FB_USERNAME = "Amyjackten"
-FB_PASSWORD = "Amyjack@122"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+IG_USERNAME = os.getenv("IG_USERNAME")
+IG_PASSWORD = os.getenv("IG_PASSWORD")
 
 def extract_links(text):
     return re.findall(r"https?://\S+", text)
@@ -36,11 +30,7 @@ def detect_platform(url):
 
 def download_youtube(url):
     try:
-        ydl_opts = {
-            'quiet': True,
-            'format': 'best',
-            'noplaylist': True
-        }
+        ydl_opts = {'quiet': True, 'format': 'best', 'noplaylist': True}
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             return [info['url']]
@@ -52,11 +42,10 @@ def download_instagram(url):
     try:
         loader = instaloader.Instaloader(download_videos=False, download_video_thumbnails=False)
         loader.login(IG_USERNAME, IG_PASSWORD)
-        shortcode = re.search(r"/p/([\w-]+)/|/reel/([\w-]+)/", url)
+        shortcode = re.search(r"/(p|reel|tv)/([\w-]+)/", url)
         if not shortcode:
             return []
-        shortcode = shortcode.group(1) if shortcode.group(1) else shortcode.group(2)
-        post = instaloader.Post.from_shortcode(loader.context, shortcode)
+        post = instaloader.Post.from_shortcode(loader.context, shortcode.group(2))
         return [post.video_url] if post.is_video else [post.url]
     except Exception as e:
         logging.error(f"[Instagram ERROR] {e}")
@@ -64,11 +53,7 @@ def download_instagram(url):
 
 def download_facebook(url):
     try:
-        ydl_opts = {
-            'quiet': True,
-            'format': 'best',
-            'noplaylist': True
-        }
+        ydl_opts = {'quiet': True, 'format': 'best', 'noplaylist': True}
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             return [info['url']]
@@ -77,7 +62,7 @@ def download_facebook(url):
     return []
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Send a YouTube, Instagram or Facebook link.")
+    await update.message.reply_text("Send a YouTube, Instagram, or Facebook link.")
 
 async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -86,6 +71,7 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
         platform = detect_platform(link)
         await update.message.reply_text(f"🔍 Fetching media from {platform}...")
         media_urls = []
+
         if platform == "youtube":
             media_urls = download_youtube(link)
         elif platform == "instagram":
